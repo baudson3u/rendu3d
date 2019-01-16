@@ -5,6 +5,8 @@
 #include <iterator>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <math.h>
 
 
 
@@ -17,6 +19,7 @@ const TGAColor blue   = TGAColor(0 , 0, 255, 255);
 vector<vector<int>> points;
 vector<vector<vector<int>>> triangles;
 vector<vector<string>> vlignes;
+int compt = 0;
 
 /*void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     bool swaped = false;
@@ -40,71 +43,12 @@ vector<vector<string>> vlignes;
     }
 }*/
 
-void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
-    bool steep = false;
-    if (std::abs(x0-x1)<std::abs(y0-y1)) {
-        std::swap(x0, y0);
-        std::swap(x1, y1);
-        steep = true;
-    }
-    if (x0>x1) {
-        std::swap(x0, x1);
-        std::swap(y0, y1);
-    }
-    int dx = x1-x0;
-    int dy = y1-y0;
-    int derror2 = std::abs(dy)*2;
-    int error2 = 0;
-    int y = y0;
-    for (int x=x0; x<=x1; x++) {
-        if (steep) {
-            image.set(y, x, color);
-        } else {
-            image.set(x, y, color);
-        }
-        error2 += derror2;
-        if (error2 > dx) {
-            y += (y1>y0?1:-1);
-            error2 -= dx*2;
-        }
-    }
-}
-
-void drawTriangle(vector<int> p1, vector<int> p2, vector<int> p3, TGAImage &image, TGAColor color){
-    /*drawLine(p1[0], p1[1], p2[0], p2[1], image, white);
-    drawLine(p2[0], p2[1], p3[0], p3[1], image, white);
-    drawLine(p1[0], p1[1], p3[0], p3[1], image, white);
-    */if(p1[1]>p2[1]){
-        swap(p1,p2);
-    }
-    if(p1[1]>p3[1]){
-        swap(p1,p3);
-    }
-    if(p2[1]>p3[1]){
-        swap(p2,p3);
-    }
-    float t,t2;
-    int x, x2;
-    for (int y = p1[1]; y <= p3[1]; y++) {
-        t = (y - p1[1])/(float)(p3[1] - p1[1]);
-        x = p1[0]*(1.-t) + p3[0]*t;
-        //image.set(x, y, color);
-        if(y<=p2[1]){
-            t2 = (y - p1[1])/(float)(p2[1] - p1[1]);
-            x2 = p1[0]*(1.-t2) + p2[0]*t2;
-        }else{
-            t2 = (y - p2[1])/(float)(p3[1] - p2[1]);
-            x2 = p2[0]*(1.-t2) + p3[0]*t2;
-        }
-        drawLine(x, y, x2, y, image, color);
-        //image.set(x2, y, color);
-    }
-}
-
 int getElemTga(string name){
     ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
     if(fichier)  // si l'ouverture a réussi
     {
+        points.clear();
+        triangles.clear();
         string ligne;
         while(getline(fichier, ligne))  // tant que l'on peut mettre la ligne dans "contenu"
         {
@@ -134,6 +78,82 @@ int getElemTga(string name){
 }
 
 
+void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+    bool steep = false;
+    if (std::abs(x0-x1)<std::abs(y0-y1)) {
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+        steep = true;
+    }
+    if (x0>x1) {
+        std::swap(x0, x1);
+        std::swap(y0, y1);
+    }
+    int dx = x1-x0;
+    int dy = y1-y0;
+    int derror2 = std::abs(dy)*2;
+    int error2 = 0;
+    int y = y0;
+    for (int x=x0; x<=x1; x++) {
+        //cout << "drawLine : " << x << "   " << x0 << "   " << x1 << endl;
+        //cout << "drawLine : "<< "compteur : " << compt << endl;
+        if (steep) {
+            image.set(y, x, color);
+        } else {
+            image.set(x, y, color);
+        }
+        error2 += derror2;
+        if (error2 > dx) {
+            y += (y1>y0?1:-1);
+            error2 -= dx*2;
+        }
+    }
+}
+
+void drawTriangle(vector<int> p1, vector<int> p2, vector<int> p3, TGAImage &image, TGAColor color){
+    /*drawLine(p1[0], p1[1], p2[0], p2[1], image, white);
+    drawLine(p2[0], p2[1], p3[0], p3[1], image, white);
+    drawLine(p1[0], p1[1], p3[0], p3[1], image, white);
+    */if(p1[1]>p2[1]){
+        std::swap(p1,p2);
+    }
+    if(p1[1]>p3[1]){
+        std::swap(p1,p3);
+    }
+    if(p2[1]>p3[1]){
+        std::swap(p2,p3);
+    }
+    float t,t2;
+    int x, x2;
+    for (int y = p1[1]; y <= p3[1]; y++) {
+        //cout << "drawTriangle: "<< "compteur : " << compt << endl;
+
+        t = (y - p1[1])/(float)(p3[1] - p1[1]);
+        if isnan(t){
+                t = 0;
+        }
+        x = p1[0]*(1.-t) + p3[0]*t;
+        //image.set(x, y, color);
+        if(y<=p2[1]){
+            t2 = (y - p1[1])/(float)(p2[1] - p1[1]);
+            if isnan(t2){
+                t2 = 0;
+            }
+            x2 = p1[0]*(1.-t2) + p2[0]*t2;
+            //cout << t2 << "   " << x2 << "   " << endl;
+        }else{
+            t2 = (y - p2[1])/(float)(p3[1] - p2[1]);
+            if isnan(t2){
+                t2 = 0;
+            }
+            x2 = p2[0]*(1.-t2) + p3[0]*t2;
+        }
+        //cout << y << "   " << x << "   " << x2 << endl;
+        drawLine(x, y, x2, y, image, color);
+        //image.set(x2, y, color);
+    }
+}
+
 
 void drawPointTga(string name, TGAImage &image){
     if(getElemTga(name)){
@@ -155,7 +175,21 @@ void drawLineTga(string name, TGAImage &image){
 }
 
 
-int drawTriangleTga(string name, TGAImage &image){
+void drawTriangleTga(string name, TGAImage &image){
+    if(getElemTga(name)){
+        for (vector<vector<int>> triangle : triangles){
+            int rand1 = rand()%255;
+            int rand2 = rand()%255;
+            int rand3 = rand()%255;
+            int rand4 = rand()%255;
+            TGAColor rand = TGAColor(rand1, rand2, rand3, 255);
+            drawTriangle(triangle[0], triangle[1], triangle[2], image, rand);
+            compt++;
+        }
+    }
+}
+
+/*int drawTriangleTga(string name, TGAImage &image){
     ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
     if(fichier)  // si l'ouverture a réussi
     {
@@ -170,15 +204,16 @@ int drawTriangleTga(string name, TGAImage &image){
             //copy(vstrings.begin(), vstrings.end(), ostream_iterator<string>(cout, "\n"));
             if (vstrings.size() > 0 && vstrings[0] == "f"){
 
-                /*vector<string> point1 = vlignes[-1+stoi(vstrings[1].substr(0, vstrings[1].find("/")))];
+                vector<string> point1 = vlignes[-1+stoi(vstrings[1].substr(0, vstrings[1].find("/")))];
                 vector<string> point2 = vlignes[-1+stoi(vstrings[2].substr(0, vstrings[2].find("/")))];
                 vector<string> point3 = vlignes[-1+stoi(vstrings[3].substr(0, vstrings[3].find("/")))];
                 vector<int> p1{(1.+(float)strtof((point1[1]).c_str(),0))*400, (1.+(float)strtof((point1[2]).c_str(),0))*400};
                 vector<int> p2{(1.+(float)strtof((point2[1]).c_str(),0))*400, (1.+(float)strtof((point2[2]).c_str(),0))*400};
                 vector<int> p3{(1.+(float)strtof((point3[1]).c_str(),0))*400, (1.+(float)strtof((point3[2]).c_str(),0))*400};
 
-                drawTriangle(p1, p2, p3, image, red);*/
-                //cout << ligne << endl;  // on l'affiche
+                drawTriangle(p1, p2, p3, image, red);
+                //
+                    << ligne << endl;  // on l'affiche
             }
         }
 
@@ -190,7 +225,7 @@ int drawTriangleTga(string name, TGAImage &image){
         cerr << "Impossible d'ouvrir le fichier !" << endl;
 
     return 0;
-}
+}*/
 
 
 
