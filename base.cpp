@@ -13,7 +13,7 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
 vector<vector<string>> vlignes;
 
-void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+/*void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     bool swaped = false;
     if (abs(x0 - x1) < abs(y0 - y1)) {
         swap(x0, y0);
@@ -33,19 +33,9 @@ void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
             image.set(x, y, color);
         }
     }
-}
+}*/
 
-
-
-
-
-
-
-
-
-
-
-/*void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     bool steep = false;
     if (std::abs(x0-x1)<std::abs(y0-y1)) {
         std::swap(x0, y0);
@@ -73,7 +63,8 @@ void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
             error2 -= dx*2;
         }
     }
-}*/
+}
+
 
 int drawPointTga(string name, TGAImage &image){
     ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
@@ -92,7 +83,7 @@ int drawPointTga(string name, TGAImage &image){
                 float x =  strtof((vstrings[1]).c_str(),0);
                 float y =  strtof((vstrings[2]).c_str(),0);
 
-                cout << ligne << 'x' << x << 'y' << y << endl;  // on l'affiche
+                //cout << ligne << 'x' << x << 'y' << y << endl;  // on l'affiche
                 image.set((1+x)*400, (1+y)*400, white);
             }
         }
@@ -138,7 +129,7 @@ int drawLineTga(string name, TGAImage &image){
                 //float x =  strtof((vstrings[1]).c_str(),0);
                 //float y =  strtof((vstrings[2]).c_str(),0);
 
-                cout << ligne << endl;  // on l'affiche
+                //cout << ligne << endl;  // on l'affiche
             }
         }
 
@@ -152,29 +143,63 @@ int drawLineTga(string name, TGAImage &image){
     return 0;
 }
 
+void drawTriangleTga(vector<int> p1, vector<int> p2, vector<int> p3, TGAImage &image, TGAColor color){
+    /*drawLine(p1[0], p1[1], p2[0], p2[1], image, white);
+    drawLine(p2[0], p2[1], p3[0], p3[1], image, white);
+    drawLine(p1[0], p1[1], p3[0], p3[1], image, white);
+    */if(p1[1]>p2[1]){
+        swap(p1,p2);
+    }
+    if(p1[1]>p3[1]){
+        swap(p1,p3);
+    }
+    if(p2[1]>p3[1]){
+        swap(p2,p3);
+    }
+    float t,t2;
+    int x, x2;
+    for (int y = p1[1]; y <= p3[1]; y++) {
+        t = (y - p1[1])/(float)(p3[1] - p1[1]);
+        x = p1[0]*(1.-t) + p3[0]*t;
+        //image.set(x, y, color);
+        if(y<=p2[1]){
+            t2 = (y - p1[1])/(float)(p2[1] - p1[1]);
+            x2 = p1[0]*(1.-t2) + p2[0]*t2;
+        }else{
+            t2 = (y - p2[1])/(float)(p3[1] - p2[1]);
+            x2 = p2[0]*(1.-t2) + p3[0]*t2;
+        }
+        drawLine(x, y, x2, y, image, color);
+        //image.set(x2, y, color);
+    }
+}
+
 
 int main(int argc, char** argv) {
     TGAImage image(100, 100, TGAImage::RGB);
     image.set(52, 41, red);
 
     drawLine(10, 20, 80, 80, image, white);
-
     image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
     image.write_tga_file("output.tga");
 
 
     TGAImage image2(800,800, TGAImage::RGB);
     drawPointTga("african_head.obj" ,image2);
-
     image2.flip_vertically(); // i want to have the origin at the left bottom corner of the image
     image2.write_tga_file("output2.tga");
 
 
     TGAImage image3(800,800, TGAImage::RGB);
     drawLineTga("african_head.obj" ,image3);
-
     image3.flip_vertically(); // i want to have the origin at the left bottom corner of the image
     image3.write_tga_file("output3.tga");
+
+
+    TGAImage image4(800,800, TGAImage::RGB);
+    drawTriangleTga(vector<int>{50,50},vector<int>{400,550},vector<int>{750,650},image4, red);
+    image4.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+    image4.write_tga_file("outputTriangle.tga");
 
     return 0;
 }
