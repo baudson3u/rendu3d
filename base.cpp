@@ -144,49 +144,16 @@ void drawPointTga(string name, TGAImage &image){
 }
 
 
-
-int drawLineTga(string name, TGAImage &image){
-    ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
-    if(fichier)  // si l'ouverture a réussi
-    {
-        string ligne;
-        while(getline(fichier, ligne))  // tant que l'on peut mettre la ligne dans "contenu"
-        {
-            stringstream ligneStream(ligne);
-            istream_iterator<string> begin(ligneStream);
-            istream_iterator<string> end;
-            vector<string> vstrings(begin, end);
-            vlignes.push_back(vstrings);
-            //copy(vstrings.begin(), vstrings.end(), ostream_iterator<string>(cout, "\n"));
-            if (vstrings.size() > 0 && vstrings[0] == "f"){
-
-                vector<string> point1 = vlignes[-1+stoi(vstrings[1].substr(0, vstrings[1].find("/")))];
-                vector<string> point2 = vlignes[-1+stoi(vstrings[2].substr(0, vstrings[2].find("/")))];
-                vector<string> point3 = vlignes[-1+stoi(vstrings[3].substr(0, vstrings[3].find("/")))];
-
-
-                drawLine((1.+(float)strtof((point1[1]).c_str(),0))*400, (1.+(float)strtof((point1[2]).c_str(),0))*400, (1.+(float)strtof((point2[1]).c_str(),0))*400, (1.+(float)strtof((point2[2]).c_str(),0))*400, image, white);
-
-                drawLine((1.+(float)strtof((point2[1]).c_str(),0))*400, (1.+(float)strtof((point2[2]).c_str(),0))*400, (1.+(float)strtof((point3[1]).c_str(),0))*400, (1.+(float)strtof((point3[2]).c_str(),0))*400, image, white);
-
-                drawLine((1.+(float)strtof((point3[1]).c_str(),0))*400, (1.+(float)strtof((point3[2]).c_str(),0))*400, (1.+(float)strtof((point1[1]).c_str(),0))*400, (1.+(float)strtof((point1[2]).c_str(),0))*400, image, white);
-
-                //float x =  strtof((vstrings[1]).c_str(),0);
-                //float y =  strtof((vstrings[2]).c_str(),0);
-
-                //cout << ligne << endl;  // on l'affiche
-            }
+void drawLineTga(string name, TGAImage &image){
+    if(getElemTga(name)){
+        for (vector<vector<int>> triangle : triangles){
+            drawLine(triangle[0][0], triangle[0][1], triangle[1][0], triangle[1][1], image, white);
+            drawLine(triangle[1][0], triangle[1][1], triangle[2][0], triangle[2][1], image, white);
+            drawLine(triangle[0][0], triangle[0][1], triangle[2][0], triangle[2][1], image, white);
         }
-
-        //cout << ligne << "\n" << token << endl;  // on l'affiche
-
-        fichier.close();  // on ferme le fichier
     }
-    else  // sinon
-        cerr << "Impossible d'ouvrir le fichier !" << endl;
-
-    return 0;
 }
+
 
 int drawTriangleTga(string name, TGAImage &image){
     ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
