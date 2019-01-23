@@ -10,6 +10,7 @@
 
 
 
+
 using namespace std;
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
@@ -19,7 +20,7 @@ const TGAColor blue   = TGAColor(0 , 0, 255, 255);
 vector<vector<int>> points;
 vector<vector<vector<int>>> triangles;
 vector<vector<string>> vlignes;
-int compt = 0;
+vector<int> light {0,0,1};
 
 /*void drawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     bool swaped = false;
@@ -59,7 +60,8 @@ int getElemTga(string name){
             if (vstrings.size() > 0 && vstrings[0] == "v"){
                 float x =  strtof((vstrings[1]).c_str(),0);
                 float y =  strtof((vstrings[2]).c_str(),0);
-                vector<int> point{(int)((1+x)*400),(int)((1+y)*400)};
+                float z =  strtof((vstrings[3]).c_str(),0);
+                vector<int> point{(int)((1+x)*400),(int)((1+y)*400),(int)((1+z)*400)};
                 points.push_back(point);
             }
             if(vstrings.size() > 0 && vstrings[0] == "f"){
@@ -181,56 +183,93 @@ void drawTriangleTga(string name, TGAImage &image){
             int rand1 = rand()%255;
             int rand2 = rand()%255;
             int rand3 = rand()%255;
-            int rand4 = rand()%255;
             TGAColor rand = TGAColor(rand1, rand2, rand3, 255);
             drawTriangle(triangle[0], triangle[1], triangle[2], image, rand);
-            compt++;
         }
     }
 }
 
-/*int drawTriangleTga(string name, TGAImage &image){
-    ifstream fichier(name.c_str(), ios::in);  // on ouvre le fichier en lecture
-    if(fichier)  // si l'ouverture a réussi
-    {
-        string ligne;
-        while(getline(fichier, ligne))  // tant que l'on peut mettre la ligne dans "contenu"
-        {
-            stringstream ligneStream(ligne);
-            istream_iterator<string> begin(ligneStream);
-            istream_iterator<string> end;
-            vector<string> vstrings(begin, end);
-            vlignes.push_back(vstrings);
-            //copy(vstrings.begin(), vstrings.end(), ostream_iterator<string>(cout, "\n"));
-            if (vstrings.size() > 0 && vstrings[0] == "f"){
+/*void testCrossProduct(string name, TGAImage &image){
+    if(getElemTga(name)){
+        //vector<vector<int>> triangle = triangles[0];
+        //vector<int> light {0,0,1};
+        float div = 1;
+        float moins = 0;
+        for (vector<vector<int>> triangle : triangles){
 
-                vector<string> point1 = vlignes[-1+stoi(vstrings[1].substr(0, vstrings[1].find("/")))];
-                vector<string> point2 = vlignes[-1+stoi(vstrings[2].substr(0, vstrings[2].find("/")))];
-                vector<string> point3 = vlignes[-1+stoi(vstrings[3].substr(0, vstrings[3].find("/")))];
-                vector<int> p1{(1.+(float)strtof((point1[1]).c_str(),0))*400, (1.+(float)strtof((point1[2]).c_str(),0))*400};
-                vector<int> p2{(1.+(float)strtof((point2[1]).c_str(),0))*400, (1.+(float)strtof((point2[2]).c_str(),0))*400};
-                vector<int> p3{(1.+(float)strtof((point3[1]).c_str(),0))*400, (1.+(float)strtof((point3[2]).c_str(),0))*400};
+            vector<float> point1 {(float)(triangle[0][0])/div-moins, (float)(triangle[0][1])/div-moins, (float)(triangle[0][2])/div-moins};
+            vector<float> point2 {(float)(triangle[1][0])/div-moins, (float)(triangle[1][1])/div-moins, (float)(triangle[1][2])/div-moins};
+            vector<float> point3 {(float)(triangle[2][0])/div-moins, (float)(triangle[2][1])/div-moins, (float)(triangle[2][2])/div-moins};
+            vector<float> U {point2[0]-point1[0], point2[1]-point1[1], point2[2]-point1[2]};
+            vector<float> V {point3[0]-point1[0], point3[1]-point1[1], point3[2]-point1[2]};
+            vector<float> N {U[0]*V[0],U[1]*V[1],U[2]*V[2]};
+            float norm = sqrt(N[0]*N[0]+N[1]*N[1]+N[2]*N[2]);
+            vector<float> N2 {N[0]*(1/norm), N[1]*(1/norm), N[2]*(1/norm)};
 
-                drawTriangle(p1, p2, p3, image, red);
-                //
-                    << ligne << endl;  // on l'affiche
+            //cout << N2[2] << endl;
+            //float normX = U[1]*V[2] - U[2]*V[1];
+            //float normY = U[2]*V[0] - U[0]*V[2];
+            //float normZ = U[0]*V[1] - U[1]*V[0];
+            //vector<float> normmm {normX, normY, normZ};
+            //cout << normmm[2] << endl;
+            //cout << "norm : " << norm[0] << "     " << norm[1] << "     " << norm[2] << endl;
+            float intensity = light[0]*N2[0] + light[1]*N2[1] + light[2]*N2[2];
+            if (intensity > 0) {
+                int test = (int)(255*intensity);
+                cout << intensity  << "     " << test << endl;
+                TGAColor colorTest = TGAColor(test,test,test,255);
+                drawTriangle(triangle[0], triangle[1], triangle[2], image, colorTest);
             }
         }
-
-        //cout << ligne << "\n" << token << endl;  // on l'affiche
-
-        fichier.close();  // on ferme le fichier
     }
-    else  // sinon
-        cerr << "Impossible d'ouvrir le fichier !" << endl;
-
-    return 0;
 }*/
 
 
+void testCrossProduct(string name, TGAImage &image){
+    if(getElemTga(name)){
+
+        float div = 400;
+        float moins = 1;
+
+        for (vector<vector<int>> triangle : triangles){
+            vector<float> point1 {(float)(triangle[0][0])/div-moins, (float)(triangle[0][1])/div-moins, (float)(triangle[0][2])/div-moins};
+            vector<float> point2 {(float)(triangle[1][0])/div-moins, (float)(triangle[1][1])/div-moins, (float)(triangle[1][2])/div-moins};
+            vector<float> point3 {(float)(triangle[2][0])/div-moins, (float)(triangle[2][1])/div-moins, (float)(triangle[2][2])/div-moins};
+            //for(vector<int> point : triangle){
+              //  cout << point[0] << "     " << point[1] << "     " << point[2] << endl;
+            //}
+
+            vector<float> U {point2[0]-point1[0], point2[1]-point1[1], point2[2]-point1[2]};
+            vector<float> V {point3[0]-point1[0], point3[1]-point1[1], point3[2]-point1[2]};
+
+            float normX = U[1]*V[2] - U[2]*V[1];
+            float normY = U[2]*V[0] - U[0]*V[2];
+            float normZ = U[0]*V[1] - U[1]*V[0];
+
+
+
+            vector<float> norm2 {normX, normY, normZ};
+
+            float normale = sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]+norm2[2]*norm2[2]);
+            vector<float> norm {normX*(1/normale), normY*(1/normale), normZ*(1/normale)};
+
+            cout << "normale : " << normale << endl;
+
+            float intensity = (light[0]*norm[0] + light[1]*norm[1] + light[2]*norm[2])/(light[0]+light[1]+light[2]);
+            cout << "norm : " << norm[0] << "     " << norm[1] << "     " << norm[2] << endl;
+
+            if (intensity > 0) {
+                float test = (intensity*255);
+                //cout << "test : " << test << endl;
+                TGAColor colorTest = TGAColor(test,test,test,255);
+                drawTriangle(triangle[0], triangle[1], triangle[2], image, colorTest);
+            }
+        }
+    }
+}
 
 int main(int argc, char** argv) {
-    TGAImage image(100, 100, TGAImage::RGB);
+    /*TGAImage image(100, 100, TGAImage::RGB);
     image.set(52, 41, red);
 
     drawLine(10, 20, 80, 80, image, white);
@@ -260,7 +299,14 @@ int main(int argc, char** argv) {
     TGAImage image5(800,800, TGAImage::RGB);
     drawTriangleTga("african_head.obj" ,image5);
     image5.flip_vertically(); // i want to have the origin at the left bottom corner of the image
-    image5.write_tga_file("output5.tga");
+    image5.write_tga_file("output5.tga");*/
+    TGAImage image6(800,800, TGAImage::RGB);
+    //drawLineTga("african_head.obj" ,image6);
+    testCrossProduct("african_head.obj", image6);
+
+    image6.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+    image6.write_tga_file("output6.tga");
+
 
     return 0;
 }
