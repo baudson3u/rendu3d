@@ -189,43 +189,9 @@ void drawTriangleTga(string name, TGAImage &image){
     }
 }
 
-/*void testCrossProduct(string name, TGAImage &image){
-    if(getElemTga(name)){
-        //vector<vector<int>> triangle = triangles[0];
-        //vector<int> light {0,0,1};
-        float div = 1;
-        float moins = 0;
-        for (vector<vector<int>> triangle : triangles){
-
-            vector<float> point1 {(float)(triangle[0][0])/div-moins, (float)(triangle[0][1])/div-moins, (float)(triangle[0][2])/div-moins};
-            vector<float> point2 {(float)(triangle[1][0])/div-moins, (float)(triangle[1][1])/div-moins, (float)(triangle[1][2])/div-moins};
-            vector<float> point3 {(float)(triangle[2][0])/div-moins, (float)(triangle[2][1])/div-moins, (float)(triangle[2][2])/div-moins};
-            vector<float> U {point2[0]-point1[0], point2[1]-point1[1], point2[2]-point1[2]};
-            vector<float> V {point3[0]-point1[0], point3[1]-point1[1], point3[2]-point1[2]};
-            vector<float> N {U[0]*V[0],U[1]*V[1],U[2]*V[2]};
-            float norm = sqrt(N[0]*N[0]+N[1]*N[1]+N[2]*N[2]);
-            vector<float> N2 {N[0]*(1/norm), N[1]*(1/norm), N[2]*(1/norm)};
-
-            //cout << N2[2] << endl;
-            //float normX = U[1]*V[2] - U[2]*V[1];
-            //float normY = U[2]*V[0] - U[0]*V[2];
-            //float normZ = U[0]*V[1] - U[1]*V[0];
-            //vector<float> normmm {normX, normY, normZ};
-            //cout << normmm[2] << endl;
-            //cout << "norm : " << norm[0] << "     " << norm[1] << "     " << norm[2] << endl;
-            float intensity = light[0]*N2[0] + light[1]*N2[1] + light[2]*N2[2];
-            if (intensity > 0) {
-                int test = (int)(255*intensity);
-                cout << intensity  << "     " << test << endl;
-                TGAColor colorTest = TGAColor(test,test,test,255);
-                drawTriangle(triangle[0], triangle[1], triangle[2], image, colorTest);
-            }
-        }
-    }
-}*/
 
 
-void testCrossProduct(string name, TGAImage &image){
+void backFaceCulling(string name, TGAImage &image){
     if(getElemTga(name)){
 
         float div = 400;
@@ -253,15 +219,15 @@ void testCrossProduct(string name, TGAImage &image){
             float normale = sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]+norm2[2]*norm2[2]);
             vector<float> norm {normX*(1/normale), normY*(1/normale), normZ*(1/normale)};
 
-            cout << "normale : " << normale << endl;
+            //cout << "normale : " << normale << endl;
 
             float intensity = (light[0]*norm[0] + light[1]*norm[1] + light[2]*norm[2])/(light[0]+light[1]+light[2]);
-            cout << "norm : " << norm[0] << "     " << norm[1] << "     " << norm[2] << endl;
+            //cout << "norm : " << norm[0] << "     " << norm[1] << "     " << norm[2] << endl;
+
 
             if (intensity > 0) {
-                float test = (intensity*255);
-                //cout << "test : " << test << endl;
-                TGAColor colorTest = TGAColor(test,test,test,255);
+                float intensityColor = (intensity*255);
+                TGAColor colorTest = TGAColor(intensityColor,intensityColor,125,255);
                 drawTriangle(triangle[0], triangle[1], triangle[2], image, colorTest);
             }
         }
@@ -302,7 +268,7 @@ int main(int argc, char** argv) {
     image5.write_tga_file("output5.tga");*/
     TGAImage image6(800,800, TGAImage::RGB);
     //drawLineTga("african_head.obj" ,image6);
-    testCrossProduct("african_head.obj", image6);
+    backFaceCulling("african_head.obj", image6);
 
     image6.flip_vertically(); // i want to have the origin at the left bottom corner of the image
     image6.write_tga_file("output6.tga");
